@@ -1,8 +1,7 @@
-from django.shortcuts import render
 from .serializers import UserRegistrationSerializer
-from .models import User
 from .services import UserService
 from rest_framework.views import APIView
+from rest_framework.response import Response,status
 # Create your views here
 class UserRegistrationView(APIView):
     def post(self, request):
