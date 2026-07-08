@@ -1,7 +1,8 @@
 from .serializers import UserRegistrationSerializer
 from .services import UserService
 from rest_framework.views import APIView
-from rest_framework.response import Response,status
+from rest_framework.response import Response
+from rest_framework import status
 # Create your views here
 class UserRegistrationView(APIView):
     def post(self, request):
