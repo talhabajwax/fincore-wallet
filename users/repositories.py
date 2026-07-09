@@ -18,5 +18,11 @@ class UserRepository:
     
     def get_user_profile(self, user):
         return User.objects.get(id=user.id)
+    
+    def update_user_profile(self, user, updated_data):
+        for field, value in updated_data.items():
+            setattr(user, field, value)
+        user.save()
+        return user
 
    

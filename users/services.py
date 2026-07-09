@@ -24,3 +24,7 @@ class UserService:
     def get_user_profile(self, user):
         user_repository = UserRepository()
         return user_repository.get_user_profile(user)
+    
+    def update_user_profile(self, user, updated_data):
+        user_repository = UserRepository()
+        return user_repository.update_user_profile(user, updated_data)

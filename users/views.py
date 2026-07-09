@@ -1,4 +1,4 @@
-from .serializers import UserLoginSerializer, UserProfileSerializer, UserRegistrationSerializer
+from .serializers import UserLoginSerializer, UserProfileSerializer, UserRegistrationSerializer, UserProfileUpdateSerializer
 from .services import UserService
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
@@ -50,3 +50,17 @@ class UserProfileView(APIView):
         user_profile = user_service.get_user_profile(user)
         serializer = UserProfileSerializer(user_profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class UserProfileUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+        serializer = UserProfileUpdateSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            updated_data = serializer.validated_data
+            user_service = UserService()
+            updated_user = user_service.update_user_profile(user, updated_data)
+            updated_serializer = UserProfileSerializer(updated_user)
+            return Response(updated_serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
