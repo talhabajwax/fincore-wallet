@@ -15,5 +15,8 @@ class UserRepository:
                 return None
             
         return user
+    
+    def get_user_profile(self, user):
+        return User.objects.get(id=user.id)
 
    

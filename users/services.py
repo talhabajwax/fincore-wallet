@@ -20,3 +20,7 @@ class UserService:
          
          
         return None
+    
+    def get_user_profile(self, user):
+        user_repository = UserRepository()
+        return user_repository.get_user_profile(user)
