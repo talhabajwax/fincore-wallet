@@ -1,8 +1,11 @@
 from .serializers import UserLoginSerializer, UserRegistrationSerializer
 from .services import UserService
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+
 # Create your views here
 class UserRegistrationView(APIView):
     def post(self, request):
@@ -23,13 +26,17 @@ class UserLoginView(APIView):
             login_service = UserService()
             user = login_service.login_user(login_data)
             if user:
+                refresh = RefreshToken.for_user(user)
                 return Response({
-                    "message": "User logged in successfully.",
-                    "user": {
-                        "id": user.id,
-                        "username": user.username,
-                        "email": user.email
-                    }
+    "message": "User logged in successfully.",
+    "access": str(refresh.access_token),
+    "refresh": str(refresh),
+    "user": {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+    }
+
                 }, status=status.HTTP_200_OK)
             return Response({"error": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
