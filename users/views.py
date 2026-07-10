@@ -61,6 +61,6 @@ class UserProfileUpdateView(APIView):
             updated_data = serializer.validated_data
             user_service = UserService()
             updated_user = user_service.update_user_profile(user, updated_data)
-            updated_serializer = UserProfileSerializer(updated_user)
+            updated_serializer = UserProfileUpdateSerializer(updated_user)
             return Response(updated_serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
