@@ -1,7 +1,7 @@
-from django import path
+from django.urls import path
 from .views import CreateWalletView
 
 urlpatterns = [
-        path("=CreateWallet/", CreateWalletView.as_view(), name="user-profile-update")
+        path("create/", CreateWalletView.as_view(), name="create-wallet"),
 
 ]
