@@ -36,5 +36,16 @@ class CreateWalletView(APIView):
             status=status.HTTP_201_CREATED
         )
         
+class AllWalletsView(APIView):
+    permission_classes = [IsAuthenticated]        
+        
     def get (self ,request):
+        wallets_service = WalletService()
+        user=request.user
+        wallets=wallets_service.all_wallets(user)
+        serializer = WalletSerializer(wallets, many=True)
+
+        return Response(
+        serializer.data,
+        status=status.HTTP_200_OK)
         
