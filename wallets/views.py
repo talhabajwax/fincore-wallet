@@ -35,3 +35,6 @@ class CreateWalletView(APIView):
             {"message": "Wallet created successfully."},
             status=status.HTTP_201_CREATED
         )
+        
+    def get (self ,request):
+        
