@@ -49,3 +49,18 @@ class AllWalletsView(APIView):
         serializer.data,
         status=status.HTTP_200_OK)
         
+class AWalletView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get (self,request,wallet_id):
+     user =request.user
+     wallet_service=WalletService()
+     wallet=wallet_service.a_wallet(user,wallet_id)
+     serializer=WalletSerializer(wallet)
+     if wallet is None:
+            return Response(
+                {"error": "Wallet not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+     return Response(serializer.data,status=status.HTTP_200_OK)
+     
+        

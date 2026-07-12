@@ -10,3 +10,7 @@ class WalletRepository:
     
     def all_wallets(self,user):
        return Wallet.objects.filter(user=user)
+   
+    def a_wallet(self,user,wallet_id):
+        return Wallet.objects.filter(user=user,id=wallet_id).first()
+    

@@ -11,3 +11,7 @@ class WalletService:
     def all_wallets(self, user):
         all_wallets_repo= WalletRepository()
         return all_wallets_repo.all_wallets(user)
+    
+    def a_wallet(self,user,wallet_id):
+        a_wallet_repo=WalletRepository()
+        return a_wallet_repo.a_wallet(user,wallet_id)
