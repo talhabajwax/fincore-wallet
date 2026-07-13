@@ -1,3 +1,8 @@
 from django.db import models
 
-# Create your models here.
+class ledgerAccount(models.Model):
+        wallet = models.OneToOneField(
+        "wallets.Wallet",
+        on_delete=models.CASCADE,
+        related_name="ledger_account",)
+        
