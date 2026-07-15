@@ -20,6 +20,11 @@ class Transaction(models.Model):
         on_delete=models.PROTECT,
         related_name="transactions",
     )
+     wallet = models.ForeignKey(
+    "wallets.Wallet",
+    on_delete=models.PROTECT,
+    related_name="transactions",
+)
 
      transaction_type = models.CharField(
         max_length=20,

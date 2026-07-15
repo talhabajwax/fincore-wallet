@@ -4,8 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
 from .serializers import DepositSerializer
-from .services import transactionService
-
+from .services import TransactionService
 class DepositView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request,wallet_id):
@@ -19,7 +18,7 @@ class DepositView(APIView):
         user = request.user
         description = serializer.validated_data.get("description", "")
         amount =serializer.validated_data["amount"]
-        service = transactionService()
+        service = TransactionService()
         try:
          transaction = service.deposit(user,wallet_id,amount,description)
         except ValueError as error:
