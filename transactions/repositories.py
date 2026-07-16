@@ -1,6 +1,7 @@
 from .models import Transaction
 
 
+
 class TransactionRepository:
     def deposit(
         self,
@@ -21,4 +22,4 @@ class TransactionRepository:
         )
         
     def proceed_transaction(self, transaction_id, user):
-        Transaction.objects.filter(id=transaction_id,created_by=user,status="pending",transaction_type="deposit", ).first()
+        return Transaction.objects.filter(id=transaction_id,created_by=user,status="pending",transaction_type="deposit", ).first()

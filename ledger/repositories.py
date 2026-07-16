@@ -8,3 +8,5 @@ class LedgerRepository:
     def ledger_for_external_account(self , account_type,wallet):
         external_account,created= LedgerAccount.objects.get_or_create(account_type=account_type,wallet=wallet)
         return external_account
+    def find_ledger_account(self , wallet):
+        return LedgerAccount.objects.filter(wallet=wallet).first()

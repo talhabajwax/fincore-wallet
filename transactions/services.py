@@ -1,6 +1,8 @@
 from .repositories import TransactionRepository
 from wallets.repositeries import WalletRepository
 import uuid
+from ledger.repositories import LedgerRepository
+
 
 
 class TransactionService:
@@ -38,4 +40,12 @@ class TransactionService:
         proceed = repo.proceed_transaction(transaction_id,user)
         if proceed is None:
             raise ValueError("Pending deposit transaction not found.")
-        return proceed
+        wallet = proceed.wallet
+        ledgerRepo = LedgerRepository()
+        ledger = ledgerRepo.find_ledger_account(wallet)
+        if ledger is None:
+         raise ValueError("Wallet ledger account not found.")
+        account_type = "external_funding"
+        wallet_for_ledger  = None
+        ledgerAccountRepo = ledgerRepo.ledger_for_external_account(account_type,wallet_for_ledger)
+        
