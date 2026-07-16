@@ -36,3 +36,23 @@ class DepositView(APIView):
     },
     status=status.HTTP_201_CREATED
 )
+            
+            
+class ConfirmDepositView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, transaction_id):
+     user = request.user
+     service = TransactionService()
+     try:
+      proceed = service.proceed_transaction(transaction_id,user)
+     except ValueError as error:
+            return Response(
+                {"error": str(error)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+     return Response(
+         {
+             "message":"Pending deposit found"
+         }
+     )
+                

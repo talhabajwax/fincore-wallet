@@ -32,3 +32,10 @@ class TransactionService:
         )
 
         return transaction
+    
+    def proceed_transaction(self,transaction_id,user):
+        repo = TransactionRepository()
+        proceed = repo.proceed_transaction(transaction_id,user)
+        if proceed is None:
+            raise ValueError("Pending deposit transaction not found.")
+        return proceed

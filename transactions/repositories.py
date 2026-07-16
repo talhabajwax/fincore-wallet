@@ -19,3 +19,6 @@ class TransactionRepository:
             amount=amount,
             description=description,
         )
+        
+    def proceed_transaction(self, transaction_id, user):
+        Transaction.objects.filter(id=transaction_id,created_by=user,status="pending",transaction_type="deposit", ).first()
