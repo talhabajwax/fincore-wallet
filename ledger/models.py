@@ -1,4 +1,5 @@
 from django.db import models
+#new model added
 
 class LedgerAccount(models.Model):
         ACCOUNT_TYPES = [("external_funding","External Funding"),("wallet","UserWallet")]
