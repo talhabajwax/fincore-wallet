@@ -1,10 +1,12 @@
 from django.db import models
 
 class LedgerAccount(models.Model):
+        ACCOUNT_TYPES = [("external_funding","External Funding"),("wallet","UserWallet")]
         wallet = models.OneToOneField(
         "wallets.Wallet",
         on_delete=models.CASCADE,
-        related_name="ledger_account",)
+        related_name="ledger_account",null=True,blank=True)
+        account_type= models.CharField(max_length=20,choices=ACCOUNT_TYPES,)
         created_at = models.DateTimeField(auto_now_add=True)
         updated_at = models.DateTimeField(auto_now=True)
         
