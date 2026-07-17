@@ -12,7 +12,7 @@ class TestDepositFlow(TestCase):
           User = get_user_model()
           self.user = User.objects.create_user(username="talha",email="talhabajwa.x1@gmail.com", password="123456",)     
           self.wallet = Wallet.objects.create(user=self.user,currency="PKR",)
-          self.wallet_ledger = LedgerAccount.objects.create(wallet=self.wallet,account_type="wallet")
+          self.wallet_ledger = LedgerAccount.objects.create(wallet=self.wallet,account_type="wallet",currency=self.wallet.currency,)
           self.transaction = Transaction.objects.create(created_by =self.user,wallet =self.wallet,amount = 100,transaction_type ="deposit",status = "pending",reference ="dsfdsfd")
                 
                 

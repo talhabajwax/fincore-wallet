@@ -51,7 +51,8 @@ class TransactionService:
          raise ValueError("Wallet ledger account not found.")
         account_type = "external_funding"
         wallet_for_ledger  = None
-        ledgerAccountRepo = ledgerRepo.ledger_for_external_account(account_type,wallet_for_ledger)
+        currency = wallet.currency
+        ledgerAccountRepo = ledgerRepo.ledger_for_external_account(account_type,wallet_for_ledger,currency)
         entryRepo = LedgerEntryRepository()
         amount = proceed.amount
         entry1type = "debit"

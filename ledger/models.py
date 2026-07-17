@@ -6,6 +6,7 @@ class LedgerAccount(models.Model):
         "wallets.Wallet",
         on_delete=models.CASCADE,
         related_name="ledger_account",null=True,blank=True)
+        currency = models.CharField(max_length=3)
         account_type= models.CharField(max_length=20,choices=ACCOUNT_TYPES,)
         created_at = models.DateTimeField(auto_now_add=True)
         updated_at = models.DateTimeField(auto_now=True)
