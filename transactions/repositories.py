@@ -22,7 +22,7 @@ class TransactionRepository:
         )
         
     def proceed_transaction(self, transaction_id, user):
-        return Transaction.objects.filter(id=transaction_id,created_by=user,status="pending",transaction_type="deposit", ).first()
+        return Transaction.objects.select_for_update().filter(id=transaction_id,created_by=user,status="pending",transaction_type="deposit", ).first()
     
     def complete_transaction(self, transaction):
       transaction.status = "completed"
