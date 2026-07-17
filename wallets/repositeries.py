@@ -14,3 +14,7 @@ class WalletRepository:
     def a_wallet(self,user,wallet_id):
         return Wallet.objects.filter(user=user,id=wallet_id).first()
     
+    def increase_balance(self, user_wallet, amount):
+        user_wallet.balance = user_wallet.balance + amount
+        user_wallet.save(update_fields=["balance"])
+        return user_wallet

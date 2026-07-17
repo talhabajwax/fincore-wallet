@@ -52,7 +52,7 @@ class ConfirmDepositView(APIView):
             )
      return Response(
          {
-             "message":"Pending deposit found"
+             "message":"Deposit completed successfully."
          }
      )
                 
