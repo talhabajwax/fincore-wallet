@@ -77,3 +77,10 @@ class TransactionService:
         repo = TransactionRepository()
         transactions = repo.wallet_transactions(user, wallet_id)
         return transactions
+    
+    def single_transaction(self,user,wallet_id,transaction_id):
+        repo = TransactionRepository()
+        transaction = repo.single_transaction(user,wallet_id,transaction_id)
+        if transaction is None:
+         raise ValueError("Transaction not found.")
+        return transaction
