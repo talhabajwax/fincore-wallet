@@ -1,4 +1,4 @@
-from .repositories import LedgerRepository
+from .repositories import LedgerRepository,LedgerEntryRepository
 
 class LedgerService:
     def create_ledger(self,wallet):
@@ -13,3 +13,8 @@ class LedgerService:
         ledger_repo = LedgerRepository()
         external_account = ledger_repo.ledger_for_external_account(account_type,wallet,currency)
         return external_account
+    
+    def ledger_entries(self,transaction):
+        repo = LedgerEntryRepository()
+        entries = repo.ledger_entries(transaction)
+        return entries

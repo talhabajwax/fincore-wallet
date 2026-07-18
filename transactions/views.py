@@ -2,9 +2,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from ledger.serializers import LedgerEntrySerializer
 
 from .serializers import DepositSerializer,WalletTransactionsSerializer,WalletTransactionSerializer
 from .services import TransactionService
+from ledger.services import LedgerService
 class DepositView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request,wallet_id):
@@ -91,10 +93,14 @@ class WalletTransactionView(APIView):
                         status=status.HTTP_404_NOT_FOUND
                     )
         serializer = WalletTransactionSerializer(transaction)
+        ledger_service= LedgerService()
+        entries = ledger_service.ledger_entries(transaction)
+        ledgerSerializer = LedgerEntrySerializer(entries ,many=True)
         return Response(
             {
                 "transactionID": transaction_id,
                 "transaction": serializer.data,
+                "ledger_entries": ledgerSerializer.data,
             },
             status=status.HTTP_200_OK,
         )              
