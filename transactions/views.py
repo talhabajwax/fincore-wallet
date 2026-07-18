@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import DepositSerializer
+from .serializers import DepositSerializer,WalletTransactionSerializer
 from .services import TransactionService
 class DepositView(APIView):
     permission_classes = [IsAuthenticated]
@@ -55,4 +55,25 @@ class ConfirmDepositView(APIView):
              "message":"Deposit completed successfully."
          }
      )
+     
+class WalletTransactionsView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self,request,wallet_id):
+        user=request.user
+        service = TransactionService()
+        try:
+              transactions = service.wallet_transactions(user,wallet_id)
+        except ValueError as error:
+                    return Response(
+                        {"error": str(error)},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+        serializer = WalletTransactionSerializer(transactions,many=True)
+        return Response(
+            {
+                "wallet_id": wallet_id,
+                "transactions": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
                 

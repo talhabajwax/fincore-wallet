@@ -15,3 +15,5 @@ class LedgerRepository:
 class LedgerEntryRepository:
     def create_ledger_entry(self,transaction,ledger_account,entry_type,amount):
         return LedgerEntry.objects.create(transaction=transaction,ledger_account=ledger_account,entry_type=entry_type,amount=amount)
+    
+    

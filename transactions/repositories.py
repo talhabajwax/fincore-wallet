@@ -28,3 +28,6 @@ class TransactionRepository:
       transaction.status = "completed"
       transaction.save(update_fields=["status"])
       return transaction
+  
+    def wallet_transactions(self,user, wallet_id):
+        return Transaction.objects.filter(wallet_id=wallet_id,wallet__user=user,).order_by("-created_at")

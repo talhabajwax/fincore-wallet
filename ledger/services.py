@@ -7,9 +7,9 @@ class LedgerService:
           CreateLedger = ledger_repo.create_ledger(account_type,wallet)
           return CreateLedger
       
-    def ledger_for_external_account(self):
+    def ledger_for_external_account(self,currency):
         account_type = "external_funding"
         wallet = None
         ledger_repo = LedgerRepository()
-        external_account = ledger_repo.ledger_for_external_account(account_type,wallet)
+        external_account = ledger_repo.ledger_for_external_account(account_type,wallet,currency)
         return external_account

@@ -8,3 +8,15 @@ class DepositSerializer(serializers.ModelSerializer):
             "amount","description"
         ]
     
+class WalletTransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =Transaction
+        fields = [
+            "id",
+            "transaction_type",
+            "amount",
+            "status",
+            "reference",
+            "description",
+            "created_at",
+        ]
