@@ -34,3 +34,18 @@ class TransactionRepository:
     
     def single_transaction(self,user,wallet_id,transaction_id):
         return Transaction.objects.filter(id=transaction_id,wallet_id=wallet_id,wallet__user=user).first()
+    
+    def transfer_transaction(self , user, sender_wallet,amount,reference,description):
+        return Transaction.objects.create(
+        created_by=user,
+        wallet=sender_wallet,
+        transaction_type="transfer",
+        amount=amount,
+        reference=reference,
+        description=description,
+    )
+    def create_transfer(self, transaction, receiver_wallet):
+     return Transfer.objects.create(
+        transaction=transaction,
+        receiver_wallet=receiver_wallet,
+    )

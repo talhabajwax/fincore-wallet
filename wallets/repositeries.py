@@ -26,3 +26,20 @@ class WalletRepository:
      locked_wallet.save(update_fields=["balance"])
 
      return locked_wallet
+ 
+    def receiver_wallet(self, receiver_username, currency):
+     return Wallet.objects.filter(
+        user__username=receiver_username,
+        currency=currency,
+    ).first()
+     
+    def decrease_balance(self, sender_wallet, amount):
+         locked_wallet = (
+            Wallet.objects
+            .select_for_update()
+            .get(id=sender_wallet.id)
+        )
+         locked_wallet.balance = locked_wallet.balance - amount
+         locked_wallet.save(update_fields=["balance"])
+
+         return locked_wallet
