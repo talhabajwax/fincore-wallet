@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Transaction
+from .models import Transaction,Transfer
 
 class DepositSerializer(serializers.ModelSerializer):
     class Meta:
@@ -33,3 +33,18 @@ class WalletTransactionSerializer(serializers.ModelSerializer):
             "description",
             "created_at",
         ]
+        
+        
+class TransferSerializer(serializers.Serializer):
+    receiver_username = serializers.CharField(max_length=150)
+
+    amount = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        min_value=0.01,
+    )
+
+    description = serializers.CharField(
+        required=False,
+        allow_blank=True,
+    )
