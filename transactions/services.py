@@ -6,6 +6,7 @@ from ledger.repositories import LedgerEntryRepository, LedgerRepository
 from wallets.repositeries import WalletRepository
 
 from .repositories import TransactionRepository
+from .models import Transaction, Transfer
 
 
 class TransactionService:
@@ -39,48 +40,116 @@ class TransactionService:
         return transaction
 
     @transaction.atomic
-    def proceed_transaction(self, transaction_id, user):
-        repo = TransactionRepository()
-        proceed = repo.proceed_transaction(transaction_id, user)
-        if proceed is None:
-            raise ValueError("Pending deposit transaction not found.")
-        wallet = proceed.wallet
-        ledgerRepo = LedgerRepository()
-        ledger = ledgerRepo.find_ledger_account(wallet)
-        if ledger is None:
-            raise ValueError("Wallet ledger account not found.")
-        account_type = "external_funding"
-        wallet_for_ledger = None
-        currency = wallet.currency
-        ledgerAccountRepo = ledgerRepo.ledger_for_external_account(
-            account_type, wallet_for_ledger, currency
-        )
-        entryRepo = LedgerEntryRepository()
-        amount = proceed.amount
-        entry1type = "debit"
-        Entry1 = entryRepo.create_ledger_entry(
-            proceed, ledgerAccountRepo, entry1type, amount
-        )
-        entry2type = "credit"
-        Entry2 = entryRepo.create_ledger_entry(proceed, ledger, entry2type, amount)
-        walletrepo = WalletRepository()
-        balance = walletrepo.increase_balance(wallet, amount)
-        updateStatus = repo.complete_transaction(proceed)
-        return updateStatus
-
-    def wallet_transactions(self, user, wallet_id):
+    def transfer(
+        self,
+        user,
+        sender_wallet_id,
+        receiver_username,
+        amount,
+        description,
+    ):
         wallet_repo = WalletRepository()
-        valid_wallet = wallet_repo.a_wallet(user, wallet_id)
+        transaction_repo = TransactionRepository()
+        ledger_repo = LedgerRepository()
+        ledger_entry_repo = LedgerEntryRepository()
 
-        if valid_wallet is None:
-            raise ValueError("Wallet not found.")
-        repo = TransactionRepository()
-        transactions = repo.wallet_transactions(user, wallet_id)
-        return transactions
-    
-    def single_transaction(self,user,wallet_id,transaction_id):
-        repo = TransactionRepository()
-        transaction = repo.single_transaction(user,wallet_id,transaction_id)
-        if transaction is None:
-         raise ValueError("Transaction not found.")
-        return transaction
+        sender_wallet = wallet_repo.a_wallet(
+            user,
+            sender_wallet_id,
+        )
+
+        if sender_wallet is None:
+            raise ValueError("Sender wallet not found.")
+
+        if amount <= 0:
+            raise ValueError("Amount must be greater than zero.")
+
+        receiver_wallet = wallet_repo.receiver_wallet(
+            receiver_username,
+            sender_wallet.currency,
+        )
+
+        if receiver_wallet is None:
+            raise ValueError("Receiver wallet not found.")
+
+        if sender_wallet.id == receiver_wallet.id:
+            raise ValueError("Cannot transfer to the same wallet.")
+
+        sender_wallet, receiver_wallet = wallet_repo.lock_transfer_wallets(
+            sender_wallet.id,
+            receiver_wallet.id,
+        )
+
+        if sender_wallet is None or receiver_wallet is None:
+            raise ValueError("Unable to lock transfer wallets.")
+
+        if sender_wallet.status != "active":
+            raise ValueError("Sender wallet is not active.")
+
+        if receiver_wallet.status != "active":
+            raise ValueError("Receiver wallet is not active.")
+
+        if sender_wallet.currency != receiver_wallet.currency:
+            raise ValueError("Wallet currencies do not match.")
+
+        if sender_wallet.balance < amount:
+            raise ValueError("Insufficient balance.")
+
+        reference = f"TXN-{uuid.uuid4()}"
+
+        transaction = transaction_repo.transfer_transaction(
+            user,
+            sender_wallet,
+            amount,
+            reference,
+            description,
+        )
+
+        transaction_repo.create_transfer(
+            transaction,
+            receiver_wallet,
+        )
+
+        sender_ledger = ledger_repo.find_ledger_account(
+            sender_wallet,
+        )
+
+        if sender_ledger is None:
+            raise ValueError("Sender wallet ledger account not found.")
+
+        receiver_ledger = ledger_repo.find_ledger_account(
+            receiver_wallet,
+        )
+
+        if receiver_ledger is None:
+            raise ValueError("Receiver wallet ledger account not found.")
+
+        ledger_entry_repo.create_ledger_entry(
+            transaction,
+            sender_ledger,
+            "debit",
+            amount,
+        )
+
+        ledger_entry_repo.create_ledger_entry(
+            transaction,
+            receiver_ledger,
+            "credit",
+            amount,
+        )
+
+        wallet_repo.decrease_balance(
+            sender_wallet,
+            amount,
+        )
+
+        wallet_repo.increase_balance(
+            receiver_wallet,
+            amount,
+        )
+
+        completed_transaction = transaction_repo.complete_transaction(
+            transaction,
+        )
+
+        return completed_transaction

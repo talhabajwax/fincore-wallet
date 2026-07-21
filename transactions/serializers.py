@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Transaction,Transfer
+from decimal import Decimal
 
 class DepositSerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,7 +42,7 @@ class TransferSerializer(serializers.Serializer):
     amount = serializers.DecimalField(
         max_digits=12,
         decimal_places=2,
-        min_value=0.01,
+        min_value=Decimal("0.01"),
     )
 
     description = serializers.CharField(

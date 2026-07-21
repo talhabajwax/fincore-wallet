@@ -43,3 +43,21 @@ class WalletRepository:
          locked_wallet.save(update_fields=["balance"])
 
          return locked_wallet
+     
+    def lock_transfer_wallets(self, sender_wallet_id, receiver_wallet_id):
+     wallets = (
+        Wallet.objects
+        .select_for_update()
+        .filter(id__in=[sender_wallet_id, receiver_wallet_id])
+        .order_by("id")
+    )
+
+     wallets_by_id = {
+        wallet.id: wallet
+        for wallet in wallets
+    }
+
+     sender_wallet = wallets_by_id.get(sender_wallet_id)
+     receiver_wallet = wallets_by_id.get(receiver_wallet_id)
+
+     return sender_wallet, receiver_wallet         
