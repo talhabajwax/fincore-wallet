@@ -1,9 +1,19 @@
 from django.urls import path
 
-from .views import ConfirmDepositView, DepositView, WalletTransactionsView,WalletTransactionView
+from .views import (
+    ConfirmDepositView,
+    DepositView,
+    TransferView,
+    WalletTransactionsView,
+    WalletTransactionView,
+)
 
 urlpatterns = [
-    path("wallets/<int:wallet_id>/deposit/", DepositView.as_view(), name="deposit"),
+    path(
+        "wallets/<int:wallet_id>/deposit/",
+        DepositView.as_view(),
+        name="deposit",
+    ),
     path(
         "<int:transaction_id>/confirm/",
         ConfirmDepositView.as_view(),
@@ -15,8 +25,13 @@ urlpatterns = [
         name="wallet-transactions",
     ),
     path(
-    "wallets/<int:wallet_id>/transactions/<int:transaction_id>/",
-    WalletTransactionView.as_view(),
-    name="wallet-transaction-detail",
-)
+        "wallets/<int:wallet_id>/transactions/<int:transaction_id>/",
+        WalletTransactionView.as_view(),
+        name="wallet-transaction-detail",
+    ),
+    path(
+        "wallets/<int:wallet_id>/transfer/",
+        TransferView.as_view(),
+        name="wallet-transfer",
+    ),
 ]
