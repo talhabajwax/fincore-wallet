@@ -102,6 +102,7 @@ class WalletTransactionView(APIView):
 
 class TransferView(APIView):
     permission_classes = [IsAuthenticated]
+    
 
     def post(self, request, wallet_id):
         serializer = TransferSerializer(data=request.data)
@@ -109,6 +110,7 @@ class TransferView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         user = request.user
+        idempotency_key = request.headers.get("Idempotency-Key")
         sender_wallet_id = wallet_id
         receiver_username = serializer.validated_data.get("receiver_username")
         amount = serializer.validated_data["amount"]
@@ -116,14 +118,14 @@ class TransferView(APIView):
         service = TransactionService()
         try:
             transaction = service.transfer(
-                user, sender_wallet_id, receiver_username, amount, description
+                user, sender_wallet_id, receiver_username, amount, description, idempotency_key
             )
         except ValueError as error:
             return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(
                 {
-                    "message": "Transfer request created.",
+                    "message": "Transfer completed successfully.",
                     "transaction_id": transaction.id,
                     "reference": transaction.reference,
                     "status": transaction.status,

@@ -1,4 +1,4 @@
-from .models import Transaction, Transfer
+from .models import IdempotencyRecord, Transaction, Transfer
 
 
 class TransactionRepository:
@@ -63,3 +63,31 @@ class TransactionRepository:
             transaction=transaction,
             receiver_wallet=receiver_wallet,
         )
+
+
+class IdempotencyRepository:
+    def find_record(self, user, operation_type, key):
+        return IdempotencyRecord.objects.filter(
+            user=user,
+            operation_type=operation_type,
+            key=key,
+        ).first()
+
+    def create_record(self, user, operation_type, key, request_fingerprint):
+        return IdempotencyRecord.objects.create(
+            user=user,
+            operation_type=operation_type,
+            key=key,
+            request_fingerprint=request_fingerprint,
+        )
+
+    def complete_record(self, record, transaction):
+        record.transaction = transaction
+        record.status = "completed"
+        record.save(update_fields=["transaction", "status", "updated_at"])
+        return record
+
+    def fail_record(self, record):
+        record.status = "failed"
+        record.save(update_fields=["status", "updated_at"])
+        return record
