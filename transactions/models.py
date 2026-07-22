@@ -115,3 +115,50 @@ class IdempotencyRecord(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+class Withdrawal(models.Model):
+    transaction = models.OneToOneField(
+        "transactions.Transaction",
+        on_delete=models.PROTECT,
+        related_name="withdrawal_details",
+    )
+    STATUS_CHOICES = [
+    ("pending_review", "Pending Review"),
+    ("approved", "Approved"),
+    ("rejected", "Rejected"),
+    ("processing", "Processing"),
+    ("completed", "Completed"),
+    ("failed", "Failed"),
+    ("reversed", "Reversed"),
+]
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending_review",
+    )
+    receiver_wallet = models.ForeignKey(
+        "wallets.Wallet",
+        on_delete=models.PROTECT,
+        related_name="received_withdrawals",
+    )
+    reviewer = models.ForeignKey(
+        "users.User",
+        on_delete=models.PROTECT,
+        related_name="reviewed_withdrawals",
+        null=True,
+        blank=True,
+    )
+    reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+    rejection_reason = models.TextField(
+        null=True,
+        blank=True,
+    )   
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
