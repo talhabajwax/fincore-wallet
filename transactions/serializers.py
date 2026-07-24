@@ -50,3 +50,14 @@ class TransferSerializer(serializers.Serializer):
         allow_blank=True,
     )
     
+class WithdrawalSerializer(serializers.Serializer):
+    amount = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        min_value=Decimal("0.01"),
+    )
+
+    description = serializers.CharField(
+        required=False,
+        allow_blank=True,
+    )
