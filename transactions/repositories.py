@@ -1,5 +1,4 @@
-from .models import IdempotencyRecord, Transaction, Transfer
-from .models import Transaction, Withdrawal
+from .models import IdempotencyRecord, Transaction, Transfer, Withdrawal
 
 
 class TransactionRepository:
@@ -65,6 +64,19 @@ class TransactionRepository:
             receiver_wallet=receiver_wallet,
         )
 
+    def create_withdrawal_transaction(
+        self, user, wallet, amount, reference, description
+    ):
+        return Transaction.objects.create(
+            created_by=user,
+            wallet=wallet,
+            amount=amount,
+            reference=reference,
+            description=description,
+            transaction_type="withdrawal",
+            status="pending",
+        )
+
 
 class IdempotencyRepository:
     def find_record(self, user, operation_type, key):
@@ -92,23 +104,11 @@ class IdempotencyRepository:
         record.status = "failed"
         record.save(update_fields=["status", "updated_at"])
         return record
-    
-    def create_withdrawal_transaction(self,user,wallet,amount,reference,description):
-            return Transaction.objects.create(
-                created_by=user,
-                wallet=wallet,
-                amount=amount,
-                reference=reference,
-                description=description,
-                transaction_type="withdrawal",
-                status="pending",
-            )
-            
-    
+
+
 class WithdrawalRepository:
     def create_withdrawal(self, transaction):
         return Withdrawal.objects.create(
             transaction=transaction,
             status="pending_review",
         )
-        

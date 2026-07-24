@@ -6,6 +6,7 @@ from .views import (
     TransferView,
     WalletTransactionsView,
     WalletTransactionView,
+    WithdrawalView
 )
 
 urlpatterns = [
@@ -34,4 +35,9 @@ urlpatterns = [
         TransferView.as_view(),
         name="wallet-transfer",
     ),
+    path(
+    "wallets/<int:wallet_id>/withdraw/",
+    WithdrawalView.as_view(),
+    name="withdrawal-request",
+)
 ]

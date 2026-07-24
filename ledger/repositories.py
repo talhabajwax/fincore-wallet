@@ -16,6 +16,15 @@ class LedgerRepository:
 
     def find_ledger_account(self, wallet):
         return LedgerAccount.objects.filter(wallet=wallet).first()
+    
+    def withdrawal_pending_account(self, currency):
+     account, created = LedgerAccount.objects.get_or_create(
+        account_type="withdrawal_pending",
+        currency=currency,
+        wallet=None,
+    )
+
+     return account
 
 
 class LedgerEntryRepository:
@@ -32,11 +41,3 @@ class LedgerEntryRepository:
             "ledger_account"
         )
     
-    def withdrawal_pending_account(self, currency):
-     account, created = LedgerAccount.objects.get_or_create(
-        account_type="withdrawal_pending",
-        currency=currency,
-        wallet=None,
-    )
-
-     return account
