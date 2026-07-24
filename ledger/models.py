@@ -1,7 +1,7 @@
 from django.db import models
 
 class LedgerAccount(models.Model):
-        ACCOUNT_TYPES = [("external_funding","External Funding"),("wallet","UserWallet")]
+        ACCOUNT_TYPES = [("external_funding","External Funding"),("wallet","UserWallet"),("withdrawal_pending", "Withdrawal Pending")]
         wallet = models.OneToOneField(
         "wallets.Wallet",
         on_delete=models.CASCADE,

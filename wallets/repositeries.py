@@ -62,15 +62,6 @@ class WalletRepository:
 
      return sender_wallet, receiver_wallet         
  
-    def create_withdrawal_transaction(self,user,wallet,amount,reference,description):
-        return Transaction.objects.create(
-            created_by=user,
-            wallet=wallet,
-            amount=amount,
-            reference=reference,
-            description=description,
-            transaction_type="withdrawal",
-            status="pending",
-        )
+ 
         
     

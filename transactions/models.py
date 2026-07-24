@@ -136,11 +136,6 @@ class Withdrawal(models.Model):
         choices=STATUS_CHOICES,
         default="pending_review",
     )
-    receiver_wallet = models.ForeignKey(
-        "wallets.Wallet",
-        on_delete=models.PROTECT,
-        related_name="received_withdrawals",
-    )
     reviewer = models.ForeignKey(
         "users.User",
         on_delete=models.PROTECT,
