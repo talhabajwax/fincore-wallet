@@ -62,6 +62,12 @@ class WalletRepository:
 
      return sender_wallet, receiver_wallet         
  
- 
+    def lock_wallet(self, user, wallet_id):
+     return (
+        Wallet.objects
+        .select_for_update()
+        .filter(user=user, id=wallet_id)
+        .first()
+    )
         
     

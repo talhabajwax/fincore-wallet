@@ -31,3 +31,12 @@ class LedgerEntryRepository:
         return LedgerEntry.objects.filter(transaction=transaction).select_related(
             "ledger_account"
         )
+    
+    def withdrawal_pending_account(self, currency):
+     account, created = LedgerAccount.objects.get_or_create(
+        account_type="withdrawal_pending",
+        currency=currency,
+        wallet=None,
+    )
+
+     return account

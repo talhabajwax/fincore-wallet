@@ -6,7 +6,7 @@ from django.db import transaction
 from ledger.repositories import LedgerEntryRepository, LedgerRepository
 from wallets.repositeries import WalletRepository
 
-from .repositories import IdempotencyRepository, TransactionRepository
+from .repositories import IdempotencyRepository, TransactionRepository, WithdrawalRepository
 
 
 class TransactionService:
@@ -202,6 +202,52 @@ class TransactionService:
         )
 
         return completed_transaction
+    
+    @transaction.atomic
+    def request_withdrawal(self, user, wallet_id, amount, description):
+        wallet_repo = WalletRepository()
+        valid_wallet = wallet_repo.lock_wallet(user, wallet_id)
+        if valid_wallet is None:
+                    raise ValueError("Wallet not found.")
+        
+        if valid_wallet.status != "active":
+                    raise ValueError("Wallet is not active.")
+        if amount <= 0:
+                    raise ValueError("Amount must be greater than zero.")
+        if amount > valid_wallet.balance:
+                    raise ValueError("Insufficient balance.")
+        withdrawal_repo = WithdrawalRepository()
+        transaction_repo = TransactionRepository()
+        withdrawal_transaction = transaction_repo.create_withdrawal_transaction(
+            user,
+            valid_wallet,
+            amount,
+            f"TXN-{uuid.uuid4()}",
+            description,
+        )
+        withdrawal = withdrawal_repo.create_withdrawal(withdrawal_transaction)
+        ledger_repo = LedgerRepository()
+        ledger_account = ledger_repo.find_ledger_account(valid_wallet)
+        if ledger_account is None:
+                    raise ValueError("Wallet ledger account not found.")
+        withdrawal_pending_account = ledger_repo.withdrawal_pending_account(valid_wallet.currency)
+        ledger_entry_repo = LedgerEntryRepository()
+        ledger_entry_repo.create_ledger_entry(
+            withdrawal_transaction,
+            withdrawal_pending_account,
+            "credit",
+            amount
+        )
+        ledger_entry_repo.create_ledger_entry(
+            withdrawal_transaction,
+            ledger_account,
+            "debit",
+            amount
+        )
+      
+        wallet_repo.decrease_balance(valid_wallet, amount)
+        
+        return withdrawal_transaction
 
 
 class IdempotencyService:
@@ -216,3 +262,5 @@ class IdempotencyService:
             f"{description.strip()}"
         )
         return hashlib.sha256(request_data.encode()).hexdigest()
+    
+    

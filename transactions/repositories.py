@@ -1,4 +1,5 @@
 from .models import IdempotencyRecord, Transaction, Transfer
+from .models import Transaction, Withdrawal
 
 
 class TransactionRepository:
@@ -104,3 +105,10 @@ class IdempotencyRepository:
             )
             
     
+class WithdrawalRepository:
+    def create_withdrawal(self, transaction):
+        return Withdrawal.objects.create(
+            transaction=transaction,
+            status="pending_review",
+        )
+        
