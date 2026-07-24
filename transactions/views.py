@@ -11,6 +11,7 @@ from .serializers import (
     TransferSerializer,
     WalletTransactionSerializer,
     WalletTransactionsSerializer,
+    WithdrawalSerializer
 )
 from .services import TransactionService
 
@@ -126,6 +127,33 @@ class TransferView(APIView):
             return Response(
                 {
                     "message": "Transfer completed successfully.",
+                    "transaction_id": transaction.id,
+                    "reference": transaction.reference,
+                    "status": transaction.status,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+            
+class WithdrawalView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, wallet_id):
+        serializer = WithdrawalSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user
+        amount = serializer.validated_data["amount"]
+        description = serializer.validated_data.get("description", "")
+        service = TransactionService()
+        try:
+            transaction = service.request_withdrawal(user, wallet_id, amount, description)
+        except ValueError as error:
+            return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(
+                {
+                    "message": "Withdrawal request created.",
                     "transaction_id": transaction.id,
                     "reference": transaction.reference,
                     "status": transaction.status,
