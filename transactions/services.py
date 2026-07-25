@@ -252,16 +252,21 @@ class TransactionService:
     @transaction.atomic
     def approve_withdrawal(self, withdrawal_id, reviewer):
         withdrawal_repo = WithdrawalRepository()
+        transaction_repo = TransactionRepository()
 
         withdrawal = withdrawal_repo.get_pending_withdrawal_for_review(withdrawal_id)
 
         if withdrawal is None:
             raise ValueError("Pending withdrawal not found or already reviewed.")
 
-        return withdrawal_repo.approve_withdrawal(
+        approved_withdrawal = withdrawal_repo.approve_withdrawal(
             withdrawal,
             reviewer,
         )
+
+        transaction_repo.complete_transaction(withdrawal.transaction)
+
+        return approved_withdrawal
 
 
 class IdempotencyService:

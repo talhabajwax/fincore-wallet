@@ -195,11 +195,12 @@ class WithdrawalApproveView(APIView):
 
         return Response(
             {
-                "message": "Withdrawal approved successfully.",
-                "withdrawal_id": withdrawal.id,
-                "transaction_id": withdrawal.transaction.id,
-                "reference": withdrawal.transaction.reference,
-                "status": withdrawal.status,
+        "message": "Withdrawal approved successfully.",
+        "withdrawal_id": withdrawal.id,
+        "transaction_id": withdrawal.transaction.id,
+        "reference": withdrawal.transaction.reference,
+        "withdrawal_status": withdrawal.status,
+        "transaction_status": withdrawal.transaction.status,
             },
             status=status.HTTP_200_OK,
         )
