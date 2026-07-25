@@ -11,7 +11,7 @@ from .serializers import (
     TransferSerializer,
     WalletTransactionSerializer,
     WalletTransactionsSerializer,
-    WithdrawalSerializer
+    WithdrawalSerializer,
 )
 from .services import TransactionService
 
@@ -103,7 +103,6 @@ class WalletTransactionView(APIView):
 
 class TransferView(APIView):
     permission_classes = [IsAuthenticated]
-    
 
     def post(self, request, wallet_id):
         serializer = TransferSerializer(data=request.data)
@@ -119,7 +118,12 @@ class TransferView(APIView):
         service = TransactionService()
         try:
             transaction = service.transfer(
-                user, sender_wallet_id, receiver_username, amount, description, idempotency_key
+                user,
+                sender_wallet_id,
+                receiver_username,
+                amount,
+                description,
+                idempotency_key,
             )
         except ValueError as error:
             return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
@@ -133,7 +137,8 @@ class TransferView(APIView):
                 },
                 status=status.HTTP_201_CREATED,
             )
-            
+
+
 class WithdrawalView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -147,7 +152,9 @@ class WithdrawalView(APIView):
         description = serializer.validated_data.get("description", "")
         service = TransactionService()
         try:
-            transaction = service.request_withdrawal(user, wallet_id, amount, description)
+            transaction = service.request_withdrawal(
+                user, wallet_id, amount, description
+            )
         except ValueError as error:
             return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -160,3 +167,39 @@ class WithdrawalView(APIView):
                 },
                 status=status.HTTP_201_CREATED,
             )
+
+
+class WithdrawalApproveView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, withdrawal_id):
+        if not request.user.is_staff:
+            return Response(
+                {"error": "Only staff can approve withdrawals."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        reviewer = request.user
+        service = TransactionService()
+
+        try:
+            withdrawal = service.approve_withdrawal(
+                withdrawal_id,
+                reviewer,
+            )
+        except ValueError as error:
+            return Response(
+                {"error": str(error)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(
+            {
+                "message": "Withdrawal approved successfully.",
+                "withdrawal_id": withdrawal.id,
+                "transaction_id": withdrawal.transaction.id,
+                "reference": withdrawal.transaction.reference,
+                "status": withdrawal.status,
+            },
+            status=status.HTTP_200_OK,
+        )

@@ -6,7 +6,11 @@ from django.db import transaction
 from ledger.repositories import LedgerEntryRepository, LedgerRepository
 from wallets.repositeries import WalletRepository
 
-from .repositories import IdempotencyRepository, TransactionRepository, WithdrawalRepository
+from .repositories import (
+    IdempotencyRepository,
+    TransactionRepository,
+    WithdrawalRepository,
+)
 
 
 class TransactionService:
@@ -202,20 +206,20 @@ class TransactionService:
         )
 
         return completed_transaction
-    
+
     @transaction.atomic
     def request_withdrawal(self, user, wallet_id, amount, description):
         wallet_repo = WalletRepository()
         valid_wallet = wallet_repo.lock_wallet(user, wallet_id)
         if valid_wallet is None:
-                    raise ValueError("Wallet not found.")
-        
+            raise ValueError("Wallet not found.")
+
         if valid_wallet.status != "active":
-                    raise ValueError("Wallet is not active.")
+            raise ValueError("Wallet is not active.")
         if amount <= 0:
-                    raise ValueError("Amount must be greater than zero.")
+            raise ValueError("Amount must be greater than zero.")
         if amount > valid_wallet.balance:
-                    raise ValueError("Insufficient balance.")
+            raise ValueError("Insufficient balance.")
         withdrawal_repo = WithdrawalRepository()
         transaction_repo = TransactionRepository()
         withdrawal_transaction = transaction_repo.create_withdrawal_transaction(
@@ -229,25 +233,35 @@ class TransactionService:
         ledger_repo = LedgerRepository()
         ledger_account = ledger_repo.find_ledger_account(valid_wallet)
         if ledger_account is None:
-                    raise ValueError("Wallet ledger account not found.")
-        withdrawal_pending_account = ledger_repo.withdrawal_pending_account(valid_wallet.currency)
+            raise ValueError("Wallet ledger account not found.")
+        withdrawal_pending_account = ledger_repo.withdrawal_pending_account(
+            valid_wallet.currency
+        )
         ledger_entry_repo = LedgerEntryRepository()
         ledger_entry_repo.create_ledger_entry(
-            withdrawal_transaction,
-            withdrawal_pending_account,
-            "credit",
-            amount
+            withdrawal_transaction, withdrawal_pending_account, "credit", amount
         )
         ledger_entry_repo.create_ledger_entry(
-            withdrawal_transaction,
-            ledger_account,
-            "debit",
-            amount
+            withdrawal_transaction, ledger_account, "debit", amount
         )
-      
+
         wallet_repo.decrease_balance(valid_wallet, amount)
-        
+
         return withdrawal_transaction
+
+    @transaction.atomic
+    def approve_withdrawal(self, withdrawal_id, reviewer):
+        withdrawal_repo = WithdrawalRepository()
+
+        withdrawal = withdrawal_repo.get_pending_withdrawal_for_review(withdrawal_id)
+
+        if withdrawal is None:
+            raise ValueError("Pending withdrawal not found or already reviewed.")
+
+        return withdrawal_repo.approve_withdrawal(
+            withdrawal,
+            reviewer,
+        )
 
 
 class IdempotencyService:
@@ -262,5 +276,3 @@ class IdempotencyService:
             f"{description.strip()}"
         )
         return hashlib.sha256(request_data.encode()).hexdigest()
-    
-    

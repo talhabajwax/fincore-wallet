@@ -1,4 +1,5 @@
 from .models import IdempotencyRecord, Transaction, Transfer, Withdrawal
+from django.utils import timezone
 
 
 class TransactionRepository:
@@ -112,3 +113,13 @@ class WithdrawalRepository:
             transaction=transaction,
             status="pending_review",
         )
+    
+    def get_pending_withdrawal_for_review(self,withdrawal_id):
+        return Withdrawal.objects.select_for_update().filter(status = "pending_review",id=withdrawal_id).first()
+    
+    def approve_withdrawal(self, withdrawal, reviewer):
+        withdrawal.reviewer = reviewer
+        withdrawal.status = "approved"
+        withdrawal.reviewed_at = timezone.now()
+        withdrawal.save(update_fields=["reviewer", "status", "reviewed_at"])
+        return withdrawal
