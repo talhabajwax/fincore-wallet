@@ -204,3 +204,41 @@ class WithdrawalApproveView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+        
+class WithdrawalRejectView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, withdrawal_id):
+        if not request.user.is_staff:
+            return Response(
+                {"error": "Only staff members can reject withdrawals."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            service = TransactionService()
+
+            rejected_withdrawal = service.reject_withdrawal(
+                withdrawal_id=withdrawal_id,
+                reviewer=request.user,
+            )
+
+            withdrawal_transaction = rejected_withdrawal.transaction
+
+            return Response(
+                {
+                    "message": "Withdrawal rejected successfully.",
+                    "withdrawal_id": rejected_withdrawal.id,
+                    "transaction_id": withdrawal_transaction.id,
+                    "reference": withdrawal_transaction.reference,
+                    "withdrawal_status": rejected_withdrawal.status,
+                    "transaction_status": withdrawal_transaction.status,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except ValueError as error:
+            return Response(
+                {"error": str(error)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
