@@ -77,7 +77,10 @@ class TransactionRepository:
             transaction_type="withdrawal",
             status="pending",
         )
-
+    def fail_transaction(self, transaction):
+     transaction.status = "failed"
+     transaction.save(update_fields=["status"])
+     return transaction
 
 class IdempotencyRepository:
     def find_record(self, user, operation_type, key):
