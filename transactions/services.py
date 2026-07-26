@@ -289,6 +289,67 @@ class TransactionService:
          )
 
         return approved_withdrawal
+    
+    
+    from django.db import transaction
+
+
+    @transaction.atomic
+    def reject_withdrawal(self, withdrawal_id, reviewer):
+     withdrawal_repo = WithdrawalRepository()
+     transaction_repo = TransactionRepository()
+     ledger_repo = LedgerRepository()
+     ledger_entry_repo = LedgerEntryRepository()
+     wallet_repo = WalletRepository()
+
+     withdrawal = withdrawal_repo.get_pending_withdrawal_for_review(
+        withdrawal_id
+    )
+
+     if withdrawal is None:
+        raise ValueError(
+            "Pending withdrawal not found or already reviewed."
+        )
+
+     withdrawal_transaction = withdrawal.transaction
+     wallet = withdrawal_transaction.wallet
+     amount = withdrawal_transaction.amount
+     currency = wallet.currency
+
+     pending_account = ledger_repo.withdrawal_pending_account(currency)
+
+     wallet_account = ledger_repo.find_ledger_account(wallet)
+
+     if wallet_account is None:
+        raise ValueError("Wallet ledger account not found.")
+
+    # Release the reserved amount
+     ledger_entry_repo.create_ledger_entry(
+        transaction=withdrawal_transaction,
+        ledger_account=pending_account,
+        entry_type="debit",
+        amount=amount,
+    )
+
+     ledger_entry_repo.create_ledger_entry(
+        transaction=withdrawal_transaction,
+        ledger_account=wallet_account,
+        entry_type="credit",
+        amount=amount,
+    )
+
+    # Restore the cached wallet balance
+     wallet_repo.increase_balance(wallet, amount)
+
+    # Withdrawal did not complete successfully
+     transaction_repo.fail_transaction(withdrawal_transaction)
+
+     rejected_withdrawal = withdrawal_repo.reject_withdrawal(
+        withdrawal,
+        reviewer,
+    )
+
+     return rejected_withdrawal
 
 
 
