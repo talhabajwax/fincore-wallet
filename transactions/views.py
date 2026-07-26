@@ -158,15 +158,19 @@ class WithdrawalView(APIView):
         except ValueError as error:
             return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(
-                {
-                    "message": "Withdrawal request created.",
-                    "transaction_id": transaction.id,
-                    "reference": transaction.reference,
-                    "status": transaction.status,
-                },
-                status=status.HTTP_201_CREATED,
-            )
+         withdrawal = transaction.withdrawal_details
+
+        return Response(
+        {
+            "message": "Withdrawal request created.",
+            "withdrawal_id": withdrawal.id,
+            "transaction_id": transaction.id,
+            "reference": transaction.reference,
+            "withdrawal_status": withdrawal.status,
+            "transaction_status": transaction.status,
+        },
+        status=status.HTTP_201_CREATED,
+    )
 
 
 class WithdrawalApproveView(APIView):
