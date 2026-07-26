@@ -123,3 +123,10 @@ class WithdrawalRepository:
         withdrawal.reviewed_at = timezone.now()
         withdrawal.save(update_fields=["reviewer", "status", "reviewed_at"])
         return withdrawal
+    
+    def reject_withdrawal(self, withdrawal, reviewer):
+        withdrawal.reviewer = reviewer
+        withdrawal.status = "rejected"
+        withdrawal.reviewed_at = timezone.now()
+        withdrawal.save(update_fields=["reviewer", "status", "reviewed_at"])
+        return withdrawal
