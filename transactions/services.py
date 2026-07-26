@@ -253,20 +253,43 @@ class TransactionService:
     def approve_withdrawal(self, withdrawal_id, reviewer):
         withdrawal_repo = WithdrawalRepository()
         transaction_repo = TransactionRepository()
+        ledger_repo = LedgerRepository()
+        ledger_entry_repo = LedgerEntryRepository()
 
         withdrawal = withdrawal_repo.get_pending_withdrawal_for_review(withdrawal_id)
 
         if withdrawal is None:
             raise ValueError("Pending withdrawal not found or already reviewed.")
+        withdrawal_transaction = withdrawal.transaction
+        amount = withdrawal_transaction.amount
+        currency = withdrawal_transaction.wallet.currency
+        pending_account = ledger_repo.withdrawal_pending_account(currency)
+        external_account = ledger_repo.ledger_for_external_account(
+            account_type="external_funding",
+            wallet=None,
+            currency=currency,
+        )
+        ledger_entry_repo.create_ledger_entry(
+            transaction=withdrawal_transaction,
+            ledger_account=pending_account,
+            entry_type="debit",
+            amount=amount,
+        )
+        ledger_entry_repo.create_ledger_entry(
+            transaction=withdrawal_transaction,
+            ledger_account=external_account,
+            entry_type="credit",
+            amount=amount,
+        )
+        transaction_repo.complete_transaction(withdrawal_transaction)
 
         approved_withdrawal = withdrawal_repo.approve_withdrawal(
-            withdrawal,
-            reviewer,
-        )
-
-        transaction_repo.complete_transaction(withdrawal.transaction)
+        withdrawal,
+        reviewer,
+         )
 
         return approved_withdrawal
+
 
 
 class IdempotencyService:
