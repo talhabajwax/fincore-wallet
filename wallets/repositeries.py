@@ -69,5 +69,24 @@ class WalletRepository:
         .filter(user=user, id=wallet_id)
         .first()
     )
+     
+    def freeze_wallet(self, wallet):
+     wallet.status = "frozen"
+     wallet.save(update_fields=["status"])
+     return wallet
+    
+    def lock_for_freeze(self,wallet_id):
+             locked_wallet = (
+        Wallet.objects
+        .select_for_update()
+        .filter(id=wallet_id).first()
+    )
+             return locked_wallet
+
+
+    def unfreeze_wallet(self, wallet):
+     wallet.status = "active"
+     wallet.save(update_fields=["status"])
+     return wallet
         
     
