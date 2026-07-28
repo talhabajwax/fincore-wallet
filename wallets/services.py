@@ -46,3 +46,4 @@ class WalletService:
         if freezed_wallet.status == "expired":
             raise ValueError("Wallet is expired.")
         return unfreeze_wallet_repo.unfreeze_wallet(freezed_wallet)
+    

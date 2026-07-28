@@ -62,5 +62,50 @@ class AWalletView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
      return Response(serializer.data,status=status.HTTP_200_OK)
+ 
+ 
+class FreezeWalletView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self,request,wallet_id):
+     user=request.user
+     if user.is_staff is False:
+        return Response(
+            {"error": "Only staff members can freeze wallets."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+     wallet_service=WalletService()
+     try:
+        freezed_wallet=wallet_service.freeze_wallet(wallet_id)
+     except ValueError as error:
+        return Response(
+            {"error": str(error)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+     return Response(
+        {"message": "Wallet frozen successfully."},
+        status=status.HTTP_200_OK
+    )
+    
+class UnfreezeWalletView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self,request,wallet_id):
+     user=request.user
+     if user.is_staff is False:
+        return Response(
+            {"error": "Only staff members can unfreeze wallets."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+     wallet_service=WalletService()
+     try:
+        unfreezed_wallet=wallet_service.unfreeze_wallet(wallet_id)
+     except ValueError as error:
+        return Response(
+            {"error": str(error)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+     return Response(
+        {"message": "Wallet unfrozen successfully."},
+        status=status.HTTP_200_OK
+    )
      
         
